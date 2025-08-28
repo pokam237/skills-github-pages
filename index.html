@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Safewalk - Sécurité pour tous au Cameroun</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+    <style>
+        :root {
+            --primary: #0d6efd;
+            --secondary: #198754;
+            --danger: #dc3545;
+            --warning: #fd7e14;
+            --light: #f8f9fa;
+            --dark: #212529;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: #333;
+            scroll-behavior: smooth;
+        }
+        
+        .navbar {
+            box-shadow: 0 2px 4px rgba(0,0,0,.1);
+        }
+        
+        .hero-section {
+            background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('https://images.unsplash.com/photo-1572816703439-d8b34c4dc93f?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1334&q=80');
+            background-size: cover;
+            background-position: center;
+            color: white;
+            padding: 6rem 0;
+        }
+        
+        .feature-card {
+            transition: transform 0.3s;
+            height: 100%;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,.1);
+        }
+        
+        .btn-alert {
+            background-color: var(--danger);
+            border-color: var(--danger);
+            padding: 0.75rem 1.5rem;
+            font-weight: bold;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-alert:hover {
+            background-color: #bb2d3b;
+            border-color: #b02a37;
+        }
+        
+        .btn-alert:active {
+            transform: scale(0.98);
+        }
+        
+        .btn-alert.pulse {
+            animation: pulse 1.5s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .risk-map {
+            height: 300px;
+            border-radius: 0.375rem;
+            z-index: 1;
+        }
+        
+        .stats-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+        
+        footer {
+            background-color: var(--dark);
+            color: white;
+        }
+        
+        .incident-marker {
+            border-radius: 50%;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            width: 24px;
+            height: 24px;
+            color: white;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+        
+        .form-control:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+        
+        @media (max-width: 768px) {
+            .hero-section {
+                padding: 4rem 0;
+            }
+            
+            .display-4 {
+                font-size: 2.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light sticky-top">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="#">
+                <i class="bi bi-shield-check text-primary"></i> Safewalk
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#features">Fonctionnalités</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#how-it-works">Comment ça marche</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#map">Carte</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#stats">Impact</a>
+                    </li>
+                </ul>
+                <div class="d-flex">
+                    <a href="./login.html" class="btn btn-outline-primary me-2">Connexion</a>
+                    <a href="#register" class="btn btn-primary">Inscription</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section text-center">
+        <div class="container">
+            <h1 class="display-4 fw-bold mb-4">Votre sécurité, notre priorité</h1>
+            <p class="lead mb-4">Safewalk améliore la sécurité des personnes en milieux rural et urbain au Cameroun grâce à une solution d'alerte et de suivi accessible à tous.</p>
+            <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                <a href="#register" class="btn btn-primary btn-lg me-md-2">Commencer maintenant</a>
+                <a href="#how-it-works" class="btn btn-outline-light btn-lg">En savoir plus</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="py-5 bg-light">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="fw-bold">Fonctionnalités principales</h2>
+                <p class="lead">Découvrez comment Safewalk peut vous protéger au quotidien</p>
+            </div>
+            
+            <div class="row g-4">
+                <div class="col-md-6 col-lg-3">
+                    <div class="card feature-card">
+                        <div class="card-body text-center">
+                            <div class="mb-3">
+                                <i class="bi bi-plus-circle-fill text-danger" style="font-size: 2.5rem;"></i>
+                            </div>
+                            <h5 class="card-title">Alerte rapide</h5>
+                            <p class="card-text">En cas de danger, envoyez une alerte avec votre position à vos contacts de confiance en un seul clic.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 col-lg-3">
+                    <div class="card feature-card">
+                        <div class="card-body text-center">
+                            <div class="mb-3">
+                                <i class="bi bi-geo-alt-fill text-primary" style="font-size: 2.5rem;"></i>
+                            </div>
+                            <h5 class="card-title">Suivi de trajet</h5>
+                            <p class="card-text">Partagez votre trajet en temps réel avec vos proches pour qu'ils puissent vous suivre et être alertés en cas d'incident.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 col-lg-3">
+                    <div class="card feature-card">
+                        <div class="card-body text-center">
+                            <div class="mb-3">
+                                <i class="bi bi-map-fill text-success" style="font-size: 2.5rem;"></i>
+                            </div>
+                            <h5 class="card-title">Carte des incidents</h5>
+                            <p class="card-text">Visualisez les zones à risque et les incidents signalés par la communauté pour éviter les dangers.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 col-lg-3">
+                    <div class="card feature-card">
+                        <div class="card-body text-center">
+                            <div class="mb-3">
+                                <i class="bi bi-chat-dots-fill text-warning" style="font-size: 2.5rem;"></i>
+                            </div>
+                            <h5 class="card-title">Support SMS</h5>
+                            <p class="card-text">Fonctionne même avec une faible connexion Internet grâce à l'option d'envoi d'alertes par SMS.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How it works -->
+    <section id="how-it-works" class="py-5">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="fw-bold">Comment utiliser Safewalk</h2>
+                <p class="lead">Une solution simple et intuitive pour votre sécurité</p>
+            </div>
+            
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <div class="d-flex mb-4">
+                        <div class="flex-shrink-0">
+                            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                                <span class="fw-bold">1</span>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h5>Créez votre compte</h5>
+                            <p>Inscrivez-vous avec votre email ou numéro de téléphone et ajoutez vos informations personnelles.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex mb-4">
+                        <div class="flex-shrink-0">
+                            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                                <span class="fw-bold">2</span>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h5>Ajoutez vos contacts</h5>
+                            <p>Sélectionnez jusqu'à 5 personnes de confiance qui recevront vos alertes en cas de danger.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex mb-4">
+                        <div class="flex-shrink-0">
+                            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                                <span class="fw-bold">3</span>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h5>Activez les fonctionnalités</h5>
+                            <p>Utilisez le bouton d'alerte en cas de danger ou activez le suivi de trajet pour vos déplacements.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-lg-6">
+                    <div class="risk-map d-flex align-items-center justify-content-center bg-light">
+                        <div class="text-center">
+                            <i class="bi bi-phone" style="font-size: 3rem;"></i>
+                            <p class="mt-3">Interface mobile-friendly<br>pour une utilisation facile</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Alert Button -->
+    <section class="py-5 bg-danger text-white">
+        <div class="container text-center">
+            <h3 class="fw-bold mb-3">En situation d'urgence?</h3>
+            <p class="mb-4">Si vous êtes en danger, utilisez notre bouton d'alerte pour envoyer immédiatement votre position à vos contacts</p>
+            <button class="btn btn-light btn-lg btn-alert pulse" id="emergencyButton">
+                <i class="bi bi-plus-circle"></i> <span id="alertText">J'alerte</span>
+            </button>
+            <div id="countdown" class="mt-3" style="display: none;">
+                <div class="spinner-border spinner-border-sm" role="status"></div>
+                <span class="ms-2">Alerte envoyée dans <span id="countdownValue">5</span> secondes...</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Map Section -->
+    <section id="map" class="py-5 bg-light">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="fw-bold">Carte des zones à risque</h2>
+                <p class="lead">Visualisez les incidents signalés dans votre région</p>
+            </div>
+            
+            <div id="riskMap" class="risk-map mb-4"></div>
+            
+            <div class="row text-center">
+                <div class="col-md-3 col-6 mb-3">
+                    <span class="incident-marker bg-danger">A</span> Aggression
+                </div>
+                <div class="col-md-3 col-6 mb-3">
+                    <span class="incident-marker bg-warning">H</span> Harcèlement
+                </div>
+                <div class="col-md-3 col-6 mb-3">
+                    <span class="incident-marker bg-info">AC</span> Accident
+                </div>
+                <div class="col-md-3 col-6 mb-3">
+                    <span class="incident-marker bg-secondary">O</span> Autre incident
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section id="stats" class="py-5">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="fw-bold">Notre impact</h2>
+                <p class="lead">Safewalk fait déjà la différence pour la sécurité des communautés</p>
+            </div>
+            
+            <div class="row text-center">
+                <div class="col-md-3 col-6 mb-4">
+                    <div class="stats-number" id="counter1">0</div>
+                    <p>Utilisateurs actifs</p>
+                </div>
+                <div class="col-md-3 col-6 mb-4">
+                    <div class="stats-number" id="counter2">0</div>
+                    <p>Alertes traitées</p>
+                </div>
+                <div class="col-md-3 col-6 mb-4">
+                    <div class="stats-number" id="counter3">0%</div>
+                    <p>De satisfaction</p>
+                </div>
+                <div class="col-md-3 col-6 mb-4">
+                    <div class="stats-number" id="counter4">0</div>
+                    <p>Villes couvertes</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Registration Section -->
+    <section id="register" class="py-5 bg-primary bg-opacity-10">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-8 col-lg-6">
+                    <div class="card shadow">
+                        <div class="card-body p-5">
+                            <h3 class="card-title text-center mb-4">Créez votre compte</h3>
+                            <form id="registrationForm">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="firstName" class="form-label">Prénom</label>
+                                        <input type="text" class="form-control" id="firstName" required>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="lastName" class="form-label">Nom</label>
+                                        <input type="text" class="form-control" id="lastName" required>
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">Email</label>
+                                    <input type="email" class="form-control" id="email" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="phone" class="form-label">Téléphone</label>
+                                    <input type="tel" class="form-control" id="phone">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="password" class="form-label">Mot de passe</label>
+                                    <input type="password" class="form-control" id="password" required minlength="6">
+                                    <div class="form-text">Le mot de passe doit contenir au moins 6 caractères.</div>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="confirmPassword" class="form-label">Confirmer le mot de passe</label>
+                                    <input type="password" class="form-control" id="confirmPassword" required>
+                                    <div class="invalid-feedback">Les mots de passe ne correspondent pas.</div>
+                                </div>
+                                <div class="mb-3 form-check">
+                                    <input type="checkbox" class="form-check-input" id="terms" required>
+                                    <label class="form-check-label" for="terms">J'accepte les <a href="#">conditions d'utilisation</a> et la <a href="#">politique de confidentialité</a></label>
+                                </div>
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-primary">S'inscrire</button>
+                                </div>
+                                <div class="text-center mt-3">
+                                    <p>Vous avez déjà un compte? <a href="login.html">Connectez-vous</a></p>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-4 mb-4">
+                    <h5><i class="bi bi-shield-check"></i> Safewalk</h5>
+                    <p>Une solution pour améliorer la sécurité des personnes en milieux rural et urbain au Cameroun.</p>
+                </div>
+                <div class="col-lg-2 col-md-4 mb-4">
+                    <h5>Navigation</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="#" class="text-white text-decoration-none">Accueil</a></li>
+                        <li><a href="#features" class="text-white text-decoration-none">Fonctionnalités</a></li>
+                        <li><a href="#how-it-works" class="text-white text-decoration-none">Comment ça marche</a></li>
+                        <li><a href="#map" class="text-white text-decoration-none">Carte</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-2 col-md-4 mb-4">
+                    <h5>Légal</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="#" class="text-white text-decoration-none">Conditions d'utilisation</a></li>
+                        <li><a href="#" class="text-white text-decoration-none">Politique de confidentialité</a></li>
+                        <li><a href="#" class="text-white text-decoration-none">Mentions légales</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-4 col-md-4 mb-4">
+                    <h5>Contact</h5>
+                    <ul class="list-unstyled">
+                        <li><i class="bi bi-envelope"></i> support@safewalk.cm</li>
+                        <li><i class="bi bi-telephone"></i> +237 XXX XXX XXX</li>
+                        <li><i class="bi bi-geo-alt"></i> Yaoundé, Cameroun</li>
+                    </ul>
+                </div>
+            </div>
+            <hr class="my-4">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <p class="mb-0">&copy; 2023 Safewalk. Tous droits réservés.</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <a href="#" class="text-white me-3"><i class="bi bi-facebook"></i></a>
+                    <a href="#" class="text-white me-3"><i class="bi bi-twitter"></i></a>
+                    <a href="#" class="text-white"><i class="bi bi-instagram"></i></a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script>
+        // Initialisation de la carte
+        function initMap() {
+            // Centrer la carte sur le Cameroun
+            const map = L.map('riskMap').setView([5.6916, 12.7289], 6);
+            
+            // Ajouter une couche de carte (OpenStreetMap)
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+            
+            // Ajouter des marqueurs d'incidents fictifs
+            const incidents = [
+                {lat: 3.8480, lng: 11.5021, type: 'Aggression', city: 'Yaoundé'},
+                {lat: 4.0511, lng: 9.7679, type: 'Harcèlement', city: 'Douala'},
+                {lat: 5.4799, lng: 10.4176, type: 'Accident', city: 'Bafoussam'},
+                {lat: 6.2383, lng: 10.2659, type: 'Autre incident', city: 'Bamenda'},
+                {lat: 4.9343, lng: 9.9401, type: 'Aggression', city: 'Buéa'},
+                {lat: 7.3697, lng: 12.3547, type: 'Harcèlement', city: 'Maroua'},
+                {lat: 9.3014, lng: 13.3976, type: 'Accident', city: 'Garoua'},
+                {lat: 5.6347, lng: 13.7289, type: 'Autre incident', city: 'Bertoua'}
+            ];
+            
+            incidents.forEach(incident => {
+                let markerColor;
+                switch(incident.type) {
+                    case 'Aggression': markerColor = 'red'; break;
+                    case 'Harcèlement': markerColor = 'orange'; break;
+                    case 'Accident': markerColor = 'blue'; break;
+                    default: markerColor = 'gray';
+                }
+                
+                const marker = L.marker([incident.lat, incident.lng]).addTo(map);
+                marker.bindPopup(`
+                    <strong>${incident.type}</strong><br>
+                    <em>${incident.city}</em><br>
+                    Signalé il y a 2 jours
+                `);
+            });
+        }
+        
+        // Simulation d'alerte d'urgence
+        document.getElementById('emergencyButton').addEventListener('click', function() {
+            const button = this;
+            const countdownEl = document.getElementById('countdown');
+            const countdownValue = document.getElementById('countdownValue');
+            const alertText = document.getElementById('alertText');
+            
+            // Désactiver le bouton pendant le compte à rebours
+            button.disabled = true;
+            alertText.textContent = "Alerte en cours...";
+            
+            // Afficher le compte à rebours
+            countdownEl.style.display = 'block';
+            
+            let count = 5;
+            const countdownInterval = setInterval(function() {
+                countdownValue.textContent = count;
+                count--;
+                
+                if (count < 0) {
+                    clearInterval(countdownInterval);
+                    
+                    // Simuler l'envoi de la position
+                    if (navigator.geolocation) {
+                        navigator.geolocation.getCurrentPosition(
+                            function(position) {
+                                const lat = position.coords.latitude.toFixed(4);
+                                const lng = position.coords.longitude.toFixed(4);
+                                
+                                alert(`🚨 Alerte envoyée!\nVotre position (${lat}, ${lng}) a été transmise à vos contacts de confiance et aux autorités locales.`);
+                                
+                                // Réinitialiser le bouton
+                                button.disabled = false;
+                                alertText.textContent = "J'alerte";
+                                countdownEl.style.display = 'none';
+                            },
+                            function() {
+                                alert("Alerte envoyée! Impossible d'obtenir la position précise, mais votre dernier emplacement connu a été partagé.");
+                                
+                                // Réinitialiser le bouton
+                                button.disabled = false;
+                                alertText.textContent = "J'alerte";
+                                countdownEl.style.display = 'none';
+                            }
+                        );
+                    } else {
+                        alert("Alerte envoyée! Vos contacts ont été notifiés.");
+                        
+                        // Réinitialiser le bouton
+                        button.disabled = false;
+                        alertText.textContent = "J'alerte";
+                        countdownEl.style.display = 'none';
+                    }
+                }
+            }, 1000);
+        });
+        
+        // Validation du formulaire
+        document.getElementById('registrationForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Validation basique des mots de passe
+            const password = document.getElementById('password');
+            const confirmPassword = document.getElementById('confirmPassword');
+            
+            if (password.value !== confirmPassword.value) {
+                confirmPassword.setCustomValidity("Les mots de passe ne correspondent pas.");
+                confirmPassword.classList.add('is-invalid');
+                return;
+            } else {
+                confirmPassword.setCustomValidity("");
+                confirmPassword.classList.remove('is-invalid');
+            }
+            
+            // Si validation réussie, simuler l'inscription
+            alert('Inscription réussie! Un email de confirmation a été envoyé.');
+            this.reset();
+        });
+        
+        // Animation des compteurs statistiques
+        function animateCounters() {
+            const counters = document.querySelectorAll('.stats-number');
+            const values = [1250, 547, 98, 15];
+            const duration = 2000;
+            
+            counters.forEach((counter, index) => {
+                const endValue = values[index];
+                const startValue = 0;
+                const increment = endValue / (duration / 16);
+                let currentValue = startValue;
+                
+                const timer = setInterval(() => {
+                    currentValue += increment;
+                    if (currentValue >= endValue) {
+                        clearInterval(timer);
+                        counter.textContent = index === 2 ? endValue + '%' : endValue;
+                    } else {
+                        counter.textContent = index === 2 ? Math.floor(currentValue) + '%' : Math.floor(currentValue);
+                    }
+                }, 16);
+            });
+        }
+        
+        // Observer pour lancer l'animation des compteurs quand la section est visible
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    animateCounters();
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.5 });
+        
+        observer.observe(document.getElementById('stats'));
+        
+        // Initialiser la carte quand la page est chargée
+        document.addEventListener('DOMContentLoaded', function() {
+            initMap();
+        });
+    </script>
+</body>
+</html>
